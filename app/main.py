@@ -7,3 +7,7 @@ app.include_router(kits.router)
 @app.get("/")
 def root():
     return {"message": "Gundam API is running"}
+
+@app.get("/v1/health")
+def health_check():
+    return {"status": "healthy"}

@@ -1,23 +1,27 @@
-from fastapi import APIRouter, HTTPException
-from app.models import Kit
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.models import Kit
+from app.schemas import KitOut
 
 router = APIRouter(prefix="/v1/kits", tags=["kits"])
 
-KITS = [
-    Kit(id=1, name="RX-78-2 Gundam", grade="RG", series="Mobile Suit Gundam", scale="1/144", release_year=2010),
-    Kit(id=2, name="Zaku II", grade="HG", series="Mobile Suit Gundam", scale="1/144"),
-]
 
-@router.get("", response_model=list[Kit])
-def list_kits(grade: Optional[str] = None):
+@router.get("", response_model=list[KitOut])
+def list_kits(grade: Optional[str] = None, db: Session = Depends(get_db)):
+    query = select(Kit).order_by(Kit.id)
     if grade:
-        return [k for k in KITS if k.grade.upper() == grade.upper()]
-    return KITS
+        query = query.where(Kit.grade == grade.upper())
+    return db.scalars(query).all()
 
-@router.get("/{kit_id}", response_model=Kit)
-def get_kit(kit_id: int):
-    for kit in KITS:
-        if kit.id == kit_id:
-            return kit
-    raise HTTPException(status_code=404, detail="Kit not found")
+
+@router.get("/{kit_id}", response_model=KitOut)
+def get_kit(kit_id: int, db: Session = Depends(get_db)):
+    kit = db.get(Kit, kit_id)
+    if kit is None:
+        raise HTTPException(status_code=404, detail="Kit not found")
+    return kit

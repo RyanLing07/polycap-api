@@ -103,6 +103,15 @@ curl "http://127.0.0.1:8000/v1/kits?q=sazabi"
 }
 ```
 
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+The tests use a throwaway database, so they never touch your real `gunpla.db`.
+
 ## Project layout
 
 ```

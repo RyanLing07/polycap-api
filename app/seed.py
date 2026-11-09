@@ -5,11 +5,10 @@ Run from the project root:  python -m app.seed
 Kits themselves come from data/kits.csv:  python -m app.load_csv data/kits.csv
 """
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.database import Base, SessionLocal, engine
 from app.models import Grade, Manufacturer, ProductLine, Tag, Universe
-
-Base.metadata.create_all(bind=engine)
 
 UNIVERSES = [
     "Universal Century", "Future Century", "After Colony", "After War",
@@ -35,7 +34,7 @@ PRODUCT_LINES = [  # name, grade code
 TAGS = ["transformation", "clear parts", "metallic finish"]
 
 
-def get_or_create(db, model, lookup, **extra):
+def get_or_create(db: Session, model, lookup: dict, **extra):
     obj = db.scalars(select(model).filter_by(**lookup)).first()
     if obj is None:
         obj = model(**lookup, **extra)
@@ -44,7 +43,8 @@ def get_or_create(db, model, lookup, **extra):
     return obj
 
 
-with SessionLocal() as db:
+def seed_lookups(db: Session) -> None:
+    """Insert grades, universes, product lines, the default maker and tags."""
     for name in UNIVERSES:
         get_or_create(db, Universe, {"name": name})
     grades = {
@@ -57,4 +57,10 @@ with SessionLocal() as db:
     for name in TAGS:
         get_or_create(db, Tag, {"name": name})
     db.commit()
+
+
+if __name__ == "__main__":
+    Base.metadata.create_all(bind=engine)
+    with SessionLocal() as session:
+        seed_lookups(session)
     print("Lookup data ready.")

@@ -20,12 +20,22 @@ from app.database import Base
 
 
 class Universe(Base):
-    """The only lore we track: which continuity a kit belongs to."""
+    """Which continuity a kit belongs to. The only lore we track."""
 
     __tablename__ = "universes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)  # "Universal Century"
+
+
+class MobileSuit(Base):
+    """Just a name to group kits of the same machine. No lore, no pilots."""
+
+    __tablename__ = "mobile_suits"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200), unique=True)  # "RX-78-2 Gundam"
+    slug: Mapped[str] = mapped_column(String(200), unique=True)  # "rx-78-2-gundam"
 
 
 class Grade(Base):
@@ -42,7 +52,7 @@ class ProductLine(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)  # "HGUC"
-    grade_id: Mapped[int] = mapped_column(ForeignKey("grades.id"))
+    grade_id: Mapped[int] = mapped_column(ForeignKey("grades.id"), index=True)
 
     grade: Mapped[Grade] = relationship(lazy="joined")
 
@@ -81,36 +91,48 @@ class Kit(Base):
     A plain re-release is another KitRelease on the same kit.
     A real variant (new colors or parts) is a new Kit pointing at the
     original through parent_kit_id.
+
+    The slug is the permanent human-readable key (e.g. "rg-rx-78-2-gundam").
+    It is what the CSV files use, so rebuilding or updating never depends on
+    row order.
     """
 
     __tablename__ = "kits"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(200))
+    slug: Mapped[str] = mapped_column(String(120), unique=True)
+    name: Mapped[str] = mapped_column(String(200), index=True)
     name_jp: Mapped[Optional[str]] = mapped_column(String(200), default=None)
-    grade_id: Mapped[int] = mapped_column(ForeignKey("grades.id"))
+    grade_id: Mapped[int] = mapped_column(ForeignKey("grades.id"), index=True)
     product_line_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("product_lines.id"), default=None
+        ForeignKey("product_lines.id"), default=None, index=True
     )
     universe_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("universes.id"), default=None
+        ForeignKey("universes.id"), default=None, index=True
     )
-    manufacturer_id: Mapped[int] = mapped_column(ForeignKey("manufacturers.id"))
+    mobile_suit_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("mobile_suits.id"), default=None, index=True
+    )
+    manufacturer_id: Mapped[int] = mapped_column(
+        ForeignKey("manufacturers.id"), index=True
+    )
     scale: Mapped[Optional[str]] = mapped_column(String(10), default=None)
     # Always points at the ORIGINAL kit, never at another variant.
     parent_kit_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("kits.id"), default=None
+        ForeignKey("kits.id"), default=None, index=True
     )
     variant_label: Mapped[Optional[str]] = mapped_column(String(100), default=None)
     notes: Mapped[Optional[str]] = mapped_column(Text, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # Bumped on any change to the kit OR its releases (the app syncs on this).
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, server_default=func.now(), onupdate=func.now()
+        DateTime, server_default=func.now(), onupdate=func.now(), index=True
     )
 
     grade: Mapped[Grade] = relationship(lazy="joined")
     product_line: Mapped[Optional[ProductLine]] = relationship(lazy="joined")
     universe: Mapped[Optional[Universe]] = relationship(lazy="joined")
+    mobile_suit: Mapped[Optional[MobileSuit]] = relationship(lazy="joined")
     manufacturer: Mapped[Manufacturer] = relationship(lazy="joined")
     releases: Mapped[List["KitRelease"]] = relationship(
         back_populates="kit", lazy="selectin", order_by="KitRelease.release_date"
@@ -128,7 +150,7 @@ class KitRelease(Base):
     __tablename__ = "kit_releases"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    kit_id: Mapped[int] = mapped_column(ForeignKey("kits.id"))
+    kit_id: Mapped[int] = mapped_column(ForeignKey("kits.id"), index=True)
     region: Mapped[str] = mapped_column(String(10), default="JP")
     # Text, not integer: JAN codes can have leading zeros. Unique when present.
     jan_code: Mapped[Optional[str]] = mapped_column(
@@ -136,7 +158,7 @@ class KitRelease(Base):
     )
     price: Mapped[Optional[int]] = mapped_column(default=None)  # whole currency units
     currency: Mapped[str] = mapped_column(String(3), default="JPY")
-    release_date: Mapped[Optional[date]] = mapped_column(Date, default=None)
+    release_date: Mapped[Optional[date]] = mapped_column(Date, default=None, index=True)
     # "day", "month" or "year": announced kits often only have a month.
     date_precision: Mapped[str] = mapped_column(String(5), default="day")
     # None, "premium_bandai", "gundam_base", "event" or "retailer"

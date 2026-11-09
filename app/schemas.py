@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -22,6 +22,11 @@ class UniverseOut(_FromORM):
     name: str
 
 
+class MobileSuitOut(_FromORM):
+    name: str
+    slug: str
+
+
 class ManufacturerOut(_FromORM):
     name: str
 
@@ -42,15 +47,24 @@ class ReleaseOut(_FromORM):
 
 class KitOut(_FromORM):
     id: int
+    slug: str
     name: str
     name_jp: Optional[str] = None
     grade: GradeOut
     product_line: Optional[ProductLineOut] = None
     universe: Optional[UniverseOut] = None
+    mobile_suit: Optional[MobileSuitOut] = None
     manufacturer: ManufacturerOut
     scale: Optional[str] = None
     parent_kit_id: Optional[int] = None
     variant_label: Optional[str] = None
     notes: Optional[str] = None
+    updated_at: datetime
     tags: List[str] = Field(default_factory=list, validation_alias="tag_names")
     releases: List[ReleaseOut] = Field(default_factory=list)
+
+
+class KitPage(BaseModel):
+    items: List[KitOut]
+    # Pass this as ?cursor= to get the next page. Null on the last page.
+    next_cursor: Optional[str] = None

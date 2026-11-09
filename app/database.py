@@ -1,21 +1,27 @@
+import os
+
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-# Where the database lives. To move to Postgres later, change this string
-# (and remove connect_args below).
-DATABASE_URL = "sqlite:///./gunpla.db"
+# Where the database lives. Set the DATABASE_URL environment variable to point
+# somewhere else (a test database, Postgres later). Defaults to a local file.
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./gunpla.db")
+IS_SQLITE = DATABASE_URL.startswith("sqlite")
 
 # check_same_thread=False is a SQLite-only setting: FastAPI handles requests
 # on different threads, which SQLite blocks by default.
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if IS_SQLITE else {},
+)
 
-
-# SQLite ignores foreign keys unless you turn them on for every connection.
-@event.listens_for(engine, "connect")
-def _enable_sqlite_foreign_keys(dbapi_connection, _record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+if IS_SQLITE:
+    # SQLite ignores foreign keys unless you turn them on for every connection.
+    @event.listens_for(engine, "connect")
+    def _enable_sqlite_foreign_keys(dbapi_connection, _record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 
 # A factory that makes sessions (one conversation with the database).

@@ -13,8 +13,11 @@ This is an unofficial fan project, not affiliated with Bandai. It's built with F
 | Method | Path | Description |
 |---|---|---|
 | GET | `/v1/health` | Health check |
-| GET | `/v1/kits` | List kits. Optional filter: `?grade=HG` |
+| GET | `/v1/kits` | List kits. Filters: `?grade=HG`, `?universe=Cosmic Era`, `?q=zaku`, `?limit=20` |
 | GET | `/v1/kits/{id}` | Get one kit (404 if not found) |
+| GET | `/v1/kits/barcode/{jan}` | Look up a kit by the barcode on its box |
+
+A **kit** is one design (one set of parts and colors). Each kit has one or more **releases**: the boxes that went on sale, with their own barcode, price and date. A new-colors variant is its own kit that points to the original through `parent_kit_id`.
 
 Interactive docs are generated automatically at `/docs`.
 
@@ -43,10 +46,31 @@ curl "http://127.0.0.1:8000/v1/kits?grade=HG"
   {
     "id": 2,
     "name": "Zaku II",
-    "grade": "HG",
-    "series": "Mobile Suit Gundam",
+    "name_jp": null,
+    "grade": { "code": "HG", "name": "High Grade" },
+    "product_line": { "name": "HGUC" },
+    "universe": { "name": "Universal Century" },
+    "manufacturer": { "name": "Bandai Spirits" },
     "scale": "1/144",
-    "release_year": null
+    "parent_kit_id": null,
+    "variant_label": null,
+    "notes": null,
+    "tags": [],
+    "releases": [
+      {
+        "id": 2,
+        "region": "JP",
+        "jan_code": null,
+        "price": null,
+        "currency": "JPY",
+        "release_date": null,
+        "date_precision": "day",
+        "exclusive_to": null,
+        "is_limited": false,
+        "status": "released",
+        "source_url": null
+      }
+    ]
   }
 ]
 ```
@@ -59,7 +83,7 @@ app/
   database.py    database connection and sessions
   models.py      SQLAlchemy tables
   schemas.py     Pydantic response shapes
-  seed.py        inserts sample data
+  seed.py        inserts lookup data and sample kits
   routers/
     kits.py      /v1/kits endpoints
 ```

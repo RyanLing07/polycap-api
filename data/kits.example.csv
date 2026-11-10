@@ -1,4 +1,4 @@
-slug,name,name_jp,grade,product_line,universe,mobile_suit,manufacturer,scale,variant_of,variant_label,tags,notes,region,jan_code,price,currency,release_date,exclusive_to,is_limited,status,source_url
-example-hg-suit-a,EXAMPLE HG Suit A,,HG,HGUC,Universal Century,EXAMPLE Suit A,,1/144,,,,Original kit with two releases,JP,,1200,JPY,2010-03,,no,released,
-example-hg-suit-a,EXAMPLE HG Suit A,,HG,,,,,,,,,,JP,,1800,JPY,2022-06-18,,no,released,
-example-hg-suit-a-clear,EXAMPLE HG Suit A [Clear Color],,HG,HGUC,Universal Century,EXAMPLE Suit A,,1/144,example-hg-suit-a,Clear Color,clear parts,A color variant is its own kit,JP,,2500,JPY,2023,event,yes,released,
+slug,name,name_jp,grade,product_line,line_number,universe,mobile_suit,manufacturer,scale,variant_of,variant_label,tags,notes,region,jan_code,price,currency,release_date,exclusive_to,is_limited,status,source_url
+example-hg-suit-a,EXAMPLE HG Suit A,,HG,HGUC,,Universal Century,EXAMPLE Suit A,,1/144,,,,Original kit with two releases,JP,,1200,JPY,2010-03,,no,released,
+example-hg-suit-a,EXAMPLE HG Suit A,,HG,,,,,,,,,,,JP,,1800,JPY,2022-06-18,,no,released,
+example-hg-suit-a-clear,EXAMPLE HG Suit A [Clear Color],,HG,HGUC,,Universal Century,EXAMPLE Suit A,,1/144,example-hg-suit-a,Clear Color,clear parts,A color variant is its own kit,JP,,2500,JPY,2023,event,yes,released,

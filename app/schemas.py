@@ -58,6 +58,7 @@ class KitOut(_FromORM):
     scale: Optional[str] = None
     parent_kit_id: Optional[int] = None
     variant_label: Optional[str] = None
+    line_number: Optional[int] = None
     notes: Optional[str] = None
     updated_at: datetime
     tags: List[str] = Field(default_factory=list, validation_alias="tag_names")

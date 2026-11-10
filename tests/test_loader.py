@@ -91,6 +91,21 @@ def test_tags_are_created_and_attached(db):
     assert kit.tag_names == ["clear parts", "transformation"]
 
 
+def test_line_number_is_saved_and_can_be_updated(db):
+    run(db, row(**ALPHA, line_number="7"))
+    assert db.scalars(select(Kit)).one().line_number == 7
+
+    _, _, changes = run(db, row(**ALPHA, line_number="8"))
+    assert any("line_number" in c for c in changes)
+    assert db.scalars(select(Kit)).one().line_number == 8
+
+
+def test_a_blank_line_number_does_not_erase_an_existing_one(db):
+    run(db, row(**ALPHA, line_number="7"))
+    run(db, row(**ALPHA))
+    assert db.scalars(select(Kit)).one().line_number == 7
+
+
 # --- Re-running and updating --------------------------------------------------
 
 
@@ -207,6 +222,8 @@ def test_problems_are_reported_with_csv_line_numbers(db):
         row(slug="e", name="E", grade="HG", universe="Nowhere"),                # line 7
         row(slug="f", name="F", grade="HG", price="abc"),                       # line 8
         row(slug="g", name="G", grade="HG", exclusive_to="sale"),               # line 9
+        row(slug="h", name="H", grade="HG", line_number="0"),                   # line 10
+        row(slug="i", name="I", grade="HG", line_number="two"),                 # line 11
     ]
     _, problems, _ = load(db, rows)
 
@@ -220,6 +237,8 @@ def test_problems_are_reported_with_csv_line_numbers(db):
     assert has(7, "unknown universe")
     assert has(8, "price")
     assert has(9, "exclusive_to")
+    assert has(10, "line_number")
+    assert has(11, "line_number")
     assert not any(p.startswith("line 2:") for p in problems)
 
 

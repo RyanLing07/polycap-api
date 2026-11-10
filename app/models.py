@@ -122,7 +122,9 @@ class Kit(Base):
         ForeignKey("kits.id"), default=None, index=True
     )
     variant_label: Mapped[Optional[str]] = mapped_column(String(100), default=None)
-    notes: Mapped[Optional[str]] = mapped_column(Text, default=None)
+    # Position in its product line, like 1 for "RG 01". Not every line numbers its kits.
+    line_number: Mapped[Optional[int]] = mapped_column(default=None)
+    notes:Mapped[Optional[str]] = mapped_column(Text, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     # Bumped on any change to the kit OR its releases (the app syncs on this).
     updated_at: Mapped[datetime] = mapped_column(

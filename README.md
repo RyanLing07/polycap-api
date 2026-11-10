@@ -51,6 +51,7 @@ python -m app.load_csv data/kits.csv             # save
 - Every kit needs a unique `slug` (lowercase, hyphens, like `rg-rx-78-2-gundam`). It is the kit's permanent key.
 - Rows with the same `slug` are extra releases of the same kit (a reprint, a new barcode).
 - A color or parts variant is its own kit, with `variant_of` set to the **original** kit's slug.
+- `line_number` is the kit's number within its product line (like 29 for RG 29). Leave it blank if you don't know it.
 - `mobile_suit` is just a name used to group kits of the same machine.
 - Dates can be `2024-03-16`, `2024-03` or `2024`. Barcodes must be valid 13-digit JAN codes.
 - Re-running updates whatever changed and prints each change. A blank cell never erases existing data, so you only fill the cells you want to set.
@@ -79,6 +80,7 @@ curl "http://127.0.0.1:8000/v1/kits?q=sazabi"
       "scale": "1/144",
       "parent_kit_id": null,
       "variant_label": null,
+      "line_number": 29,
       "notes": null,
       "updated_at": "2026-11-09T01:46:17",
       "tags": [],

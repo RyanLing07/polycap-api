@@ -39,7 +39,8 @@ from app.models import (
 from app.slugs import is_valid_slug, slugify
 
 COLUMNS = [
-    "slug", "name", "name_jp", "grade", "product_line", "universe", "mobile_suit",
+    "slug", "name", "name_jp", "grade", "product_line", "line_number", "universe",
+    "mobile_suit",
     "manufacturer", "scale", "variant_of", "variant_label", "tags", "notes",
     "region", "jan_code", "price", "currency", "release_date", "exclusive_to",
     "is_limited", "status", "source_url",
@@ -224,6 +225,12 @@ def load(db: Session, rows: List[Dict[str, Optional[str]]]) -> Tuple[dict, List[
             universe = universes.get(row["universe"].lower())
             if universe is None:
                 row_problems.append(f"unknown universe {row['universe']!r}")
+        line_number = None
+        if row.get("line_number"):
+            if row["line_number"].isdigit() and int(row["line_number"]) >= 1:
+                line_number = int(row["line_number"])
+            else:
+                row_problems.append("line_number must be a whole number like 1")
         provided, release_problems = parse_release(row)
         row_problems += release_problems
         if row_problems:
@@ -238,6 +245,8 @@ def load(db: Session, rows: List[Dict[str, Optional[str]]]) -> Tuple[dict, List[
                     values[column] = row[column]
             if universe:
                 values["universe_id"] = universe.id
+            if line_number is not None:
+                values["line_number"] = line_number
             if row.get("manufacturer"):
                 values["manufacturer_id"] = get_or_create(
                     db, Manufacturer, {"name": row["manufacturer"]}

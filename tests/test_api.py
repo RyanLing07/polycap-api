@@ -11,7 +11,7 @@ UC = "Universal Century"
 
 ALPHA = row(
     slug="rg-alpha", name="Alpha", grade="RG", universe=UC, mobile_suit="Alpha Suit",
-    tags="transformation", jan_code=jan("457310200001"), release_date="2010-07-22",
+    line_number="1", tags="transformation", jan_code=jan("457310200001"), release_date="2010-07-22",
 )
 ALPHA_V2 = row(
     slug="rg-alpha-ver-2", name="Alpha Ver.2.0", grade="RG", universe=UC,
@@ -174,6 +174,8 @@ def test_a_kit_includes_its_nested_details(catalog, client):
     assert kit["manufacturer"] == {"name": "Bandai Spirits"}
     assert kit["tags"] == ["transformation"]
     assert kit["parent_kit_id"] is None
+    assert kit["line_number"] == 1
+    assert client.get("/v1/kits/slug/mg-gamma").json()["line_number"] is None
     (release,) = kit["releases"]
     assert release["jan_code"] == ALPHA["jan_code"]
     assert release["release_date"] == "2010-07-22"
